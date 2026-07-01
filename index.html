@@ -6,7 +6,10 @@
 <title>Suivi Distributeurs</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+
 <style>
   :root{
     --bg-dark:#202c22;
@@ -557,7 +560,24 @@ function modalConfirm(message, title){
   return modalAsk({title: title||'', message});
 }
 
-// ── Firebase init ──────────────────────────────────────────────
+const store = {
+  async get(key){
+    try{
+      await firebase.auth().signInAnonymously();
+      const s = await db.collection('app').doc('data').get();
+      const v = s.exists ? s.data()[key] : undefined;
+      return v !== undefined ? {value:v} : null;
+    }catch(e){ return null; }
+  },
+  async set(key, value){
+    try{
+      await firebase.auth().signInAnonymously();
+      await db.collection('app').doc('data').set({[key]:value},{merge:true});
+      return true;
+    }catch(e){ return null; }
+  }
+};
+
 const firebaseConfig = {
   apiKey: "AIzaSyBEqr9dctc_DThk4WYyP1_IdiHxtTDEHCs",
   authDomain: "distri-maison-courtier.firebaseapp.com",
@@ -568,27 +588,6 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const DOC = db.collection('app').doc('data');
-
-// Couche de stockage : remplace window.storage
-const store = {
-  async get(key){
-    try{
-      const snap = await DOC.get();
-      const val = snap.exists ? snap.data()[key] : undefined;
-      return val !== undefined ? { value: val } : null;
-    }catch(e){ return null; }
-  },
-  async set(key, value){
-    try{
-      await DOC.set({ [key]: value }, { merge: true });
-      return true;
-    }catch(e){ return null; }
-  }
-};
-// ──────────────────────────────────────────────────────────────
-
-function P(prix, origine){ return {prix, origine}; }
 const DEFAULT_PRIX = {
   "Oeufs 6":P(1.8,'revente'),"Oeufs 12":P(3.4,'revente'),"Jus de Pommes":P(3.0,'revente'),"Jus de pommes x2":P(2.8,'revente'),"Bib jus de pommes":P(10.0,'revente'),
   "Confiture de fraises":P(6.0,'revente'),"Confiture de framboises":P(6.6,'revente'),"Coulis 25cl":P(4.9,'revente'),"Soupe butternut":P(5.9,'revente'),
@@ -749,12 +748,15 @@ document.getElementById('btn-ajouter-user').addEventListener('click', async ()=>
   const nom = document.getElementById('nu-prenom').value.trim();
   if(!nom) return;
   if(!users.includes(nom)) users.push(nom);
+  const noteEl = document.getElementById('save-note-user');
+  noteEl.textContent = 'Enregistrement...';
   try{
-    await store.set('users-v1', JSON.stringify(users));
+    const result = await store.set('users-v1', JSON.stringify(users));
+    if(!result){ noteEl.textContent = 'Erreur : Firebase n\'a pas répondu'; return; }
     document.getElementById('nu-prenom').value='';
     renderUsersList(); renderPrenomSelect(); showSaveNote('save-note-user');
   }catch(e){
-    document.getElementById('save-note-user').textContent = "Échec de l'enregistrement (stockage indisponible)";
+    noteEl.textContent = 'Erreur : ' + e.message;
   }
 });
 
