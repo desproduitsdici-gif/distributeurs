@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Suivi Distributeurs</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-app-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-auth-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-firestore-compat.min.js"></script>
 
 
 <style>
@@ -560,6 +560,17 @@ function modalConfirm(message, title){
   return modalAsk({title: title||'', message});
 }
 
+const firebaseConfig = {
+  apiKey: "AIzaSyBEqr9dctc_DThk4WYyP1_IdiHxtTDEHCs",
+  authDomain: "distri-maison-courtier.firebaseapp.com",
+  projectId: "distri-maison-courtier",
+  storageBucket: "distri-maison-courtier.firebasestorage.app",
+  messagingSenderId: "291598296981",
+  appId: "1:291598296981:web:913510c4f37e49824df89c"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 const store = {
   async get(key){
     try{
@@ -577,17 +588,6 @@ const store = {
     }catch(e){ return null; }
   }
 };
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBEqr9dctc_DThk4WYyP1_IdiHxtTDEHCs",
-  authDomain: "distri-maison-courtier.firebaseapp.com",
-  projectId: "distri-maison-courtier",
-  storageBucket: "distri-maison-courtier.firebasestorage.app",
-  messagingSenderId: "291598296981",
-  appId: "1:291598296981:web:913510c4f37e49824df89c"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 const DEFAULT_PRIX = {
   "Oeufs 6":P(1.8,'revente'),"Oeufs 12":P(3.4,'revente'),"Jus de Pommes":P(3.0,'revente'),"Jus de pommes x2":P(2.8,'revente'),"Bib jus de pommes":P(10.0,'revente'),
   "Confiture de fraises":P(6.0,'revente'),"Confiture de framboises":P(6.6,'revente'),"Coulis 25cl":P(4.9,'revente'),"Soupe butternut":P(5.9,'revente'),
